@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Workspace
+  - Block
+  - CircuitNode
+  - CircuitBlock
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - Workspace
+  - Block
+  - CircuitNode
+  - CircuitBlock
+  - ModelPreview
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Workspace
+    uniqueID: 1886871929
+    locked: 0
+  - name: Block
+    uniqueID: 1891959129
+    locked: 0
+  - name: CircuitNode
+    uniqueID: 3707502445
+    locked: 0
+  - name: CircuitBlock
+    uniqueID: 2399941119
+    locked: 0

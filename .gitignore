@@ -1,0 +1,12 @@
+# 在项目根目录创建 .gitignore 文件，粘贴以下内容
+# 这会忽略Library、Temp、Logs等不需要版本控制的文件夹
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+.vs/

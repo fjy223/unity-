@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!1 &6878150441903414182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 6305960824276621711}
+  - component: {fileID: 7910922068824088513}
+  - component: {fileID: 7165116060590678811}
+  - component: {fileID: 1870284144825381293}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: Default_Block_Prefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6305960824276621711
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6878150441903414182}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 96.037476, y: -1099.9111, z: 1268.3688}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7910922068824088513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6878150441903414182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df0ac9c7b2f07d84783089ad105eb598, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  workspaceHeight: 90
+  blockPlacementHeight: 90
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  workspaceLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  nodeLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  showDebugRays: 1
+  validRayColor: {r: 0, g: 1, b: 0, a: 1}
+  invalidRayColor: {r: 1, g: 0, b: 0, a: 1}
+  rayDuration: 0.5
+  rayThickness: 0.01
+  selectedBlock: {fileID: 0}
+  isDragging: 0
+  dragOffset: {x: 0, y: 0, z: 0}
+  placedBlocks: []
+  isCreatingNewBlock: 0
+  dragStartPosition: {x: 0, y: 0, z: 0}
+  canPlaceThisFrame: 0
+  chick: 0
+  currentBlockPrefab: {fileID: 0}
+  focusedBlock: {fileID: 0}
+  originalCameraPosition: {x: 0, y: 0, z: 0}
+  originalCameraRotation: {x: 0, y: 0, z: 0, w: 0}
+  originalFOV: 0
+  isZoomed: 0
+  originalMaterials: []
+  outlineObjects: []
+  clickStartTime: 0
+  clickedObject: {fileID: 0}
+  isDeleteMode: 0
+  deleteModeHighlightMaterial: {fileID: 2100000, guid: 70fc9ff4951bd3f44a01ce0c1df641b9, type: 2}
+  wireHighlightColor: {r: 1, g: 0, b: 0, a: 1}
+  deleteModeLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  hoveredObject: {fileID: 0}
+  originalHoverMaterial: {fileID: 0}
+  originalWireColor: {r: 0, g: 0, b: 0, a: 0}
+  rotationStep: 45
+  camera_control: {fileID: 0}
+  material_conversion: {fileID: 0}
+  input: {fileID: 1870284144825381293}
+  flowtoggle: {fileID: 0}
+--- !u!114 &7165116060590678811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6878150441903414182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9610c8d8238aa284799d15b05b581229, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positiveNodeMaterial: {fileID: 2100000, guid: 70fc9ff4951bd3f44a01ce0c1df641b9, type: 2}
+  negativeNodeMaterial: {fileID: 2100000, guid: 43dc24033bfeec24dac2ea7e1a4c3cc1, type: 2}
+  normalNodeMaterial: {fileID: 2100000, guid: ae4884938ffb71b4cbd657de1f7743e2, type: 2}
+  connectingMaterial: {fileID: 2100000, guid: 9ba49bab954f80e4592b2488547bb5c6, type: 2}
+  selectedMaterial: {fileID: 2100000, guid: 1a30d030b3127c541a3c7971c55faa2f, type: 2}
+  validPlacementMaterial: {fileID: 2100000, guid: 9ba49bab954f80e4592b2488547bb5c6, type: 2}
+  invalidPlacementMaterial: {fileID: 2100000, guid: 70fc9ff4951bd3f44a01ce0c1df641b9, type: 2}
+  outlineMaterial: {fileID: 2100000, guid: 306408da11be0fe41876145a04d28e75, type: 2}
+  outlineWidth: 0.05
+  CircuitBlockPlacer1: {fileID: 0}
+  camera_control: {fileID: 0}
+--- !u!114 &1870284144825381293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6878150441903414182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d0bbc35ded193e4f9df1fdf72fead29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ReturnToHome: 32
+  cleft: 97
+  cright: 100
+  cup: 119
+  cdown: 115
+  ToggleDeleteMode: 117
+  CurrentDisplay: 105
+  zjleft: 113
+  zjright: 101
