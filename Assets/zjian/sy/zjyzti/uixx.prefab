@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 6496497643578357530}
   - component: {fileID: 861887890371746951}
   - component: {fileID: 6805897092570535211}
-  m_Layer: 0
+  - component: {fileID: 2581080130559744316}
+  - component: {fileID: 4317437666624760016}
+  m_Layer: 14
   m_HasEditorInfo: 1
   m_Name: uixx
   m_TagString: Untagged
@@ -101,3 +103,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25425ae6735ac284388215e2289257d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2581080130559744316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5594583658756183791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c03e9342c31f5bf43a0b0043a8369ee3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  normalMaterial: {fileID: 2100000, guid: ae4884938ffb71b4cbd657de1f7743e2, type: 2}
+  hoverMaterial: {fileID: 2100000, guid: 70fc9ff4951bd3f44a01ce0c1df641b9, type: 2}
+--- !u!65 &4317437666624760016
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5594583658756183791}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.4348865, y: 2.8911724, z: 0.2}
+  m_Center: {x: -0.0027115345, y: -0.017641842, z: 0}

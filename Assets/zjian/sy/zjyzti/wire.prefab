@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8015667197199650011}
   - component: {fileID: 7865645060472053025}
-  m_Layer: 0
+  m_Layer: 13
   m_HasEditorInfo: 1
   m_Name: arrow
   m_TagString: Untagged
@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 8597594746088367925}
   - component: {fileID: 6108900314326883614}
   - component: {fileID: 1066080557386510814}
-  m_Layer: 0
+  m_Layer: 13
   m_HasEditorInfo: 1
   m_Name: wire
   m_TagString: Untagged
@@ -304,3 +304,5 @@ MonoBehaviour:
   arrowSpeed: 2
   deleteMarkerPrefab: {fileID: 5594583658756183791, guid: c185399e002bf0a46aa9eb502a37d6af, type: 3}
   markerHeight: 40
+  normalMarkerMaterial: {fileID: 2100000, guid: ae4884938ffb71b4cbd657de1f7743e2, type: 2}
+  hoverMarkerMaterial: {fileID: 2100000, guid: 70fc9ff4951bd3f44a01ce0c1df641b9, type: 2}

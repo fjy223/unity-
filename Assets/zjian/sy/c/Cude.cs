@@ -645,9 +645,16 @@ public class CircuitBlockPlacer : MonoBehaviour
         foreach (var wire in allWires)
         {
             if (isDeleteMode)
+            {
                 wire.ShowDeleteMarker();
+                // 重置标记状态（重要！）
+                DeleteMarker marker = wire.GetComponentInChildren<DeleteMarker>();
+                if (marker != null) marker.ResetMaterial();
+            }
             else
+            {
                 wire.HideDeleteMarker();
+            }
         }
 
         // 退出删除模式时恢复所有高亮

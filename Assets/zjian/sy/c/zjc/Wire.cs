@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Wire : MonoBehaviour
 {
@@ -20,6 +21,12 @@ public class Wire : MonoBehaviour
     public GameObject deleteMarkerPrefab;  // <--- 在Inspector中拖入预制件
     private GameObject deleteMarkerInstance; // <--- 实例化后的对象
     public float markerHeight = 2f;          // 标记在线上方的高度
+
+    /* ===== 删除标记交互（新增）======= */
+    [Header("删除标记交互")]
+    public Material normalMarkerMaterial;     // 正常状态材质
+    public Material hoverMarkerMaterial;      // 悬停状态材质
+    private bool isMarkerHovered = false;     // 标记悬停状态
 
     private LineRenderer lr;
     private Vector3[] curve;
@@ -71,14 +78,31 @@ public class Wire : MonoBehaviour
     {
         if (deleteMarkerPrefab == null)
         {
-            Debug.LogError("未设置删除标记预制件！请在Wire预制体的Inspector中拖入DeleteMarker预制件。");
+            Debug.LogError("未设置删除标记预制件！");
             return;
         }
 
-        // 实例化预制件作为子物体
         deleteMarkerInstance = Instantiate(deleteMarkerPrefab, transform);
         deleteMarkerInstance.name = "DeleteMarker";
-        deleteMarkerInstance.SetActive(false); // 初始隐藏
+
+        // 关键：获取DeleteMarker组件并初始化父引用
+        DeleteMarker markerScript = deleteMarkerInstance.GetComponent<DeleteMarker>();
+        if (markerScript == null)
+        {
+            Debug.LogError("删除标记预制体缺少DeleteMarker组件！");
+            Destroy(deleteMarkerInstance);
+            return;
+        }
+
+        // 初始化材质引用
+        markerScript.normalMaterial = normalMarkerMaterial;
+        markerScript.hoverMaterial = hoverMarkerMaterial;
+
+        // 设置父电线引用
+        markerScript.Initialize(this);
+
+        // 初始隐藏
+        deleteMarkerInstance.SetActive(false);
     }
 
     private void UpdateDeleteMarkerPosition()
@@ -120,13 +144,87 @@ public class Wire : MonoBehaviour
         GenerateCurve();
         UpdateArrow();
 
-        // 如果标记激活，更新位置
+        // 仅更新位置，交互逻辑由DeleteMarker组件处理
         if (deleteMarkerInstance != null && deleteMarkerInstance.activeSelf)
         {
             UpdateDeleteMarkerPosition();
         }
     }
+    /// <summary>
+    /// 处理删除标记的悬停检测（参考Cude.cs的射线检测逻辑）
+    /// </summary>
+    private void HandleMarkerHover()
+    {
+        // 只在删除模式下检测
+        if (!CircuitBlockPlacer.Instance || !CircuitBlockPlacer.Instance.isDeleteMode)
+        {
+            if (isMarkerHovered)
+            {
+                ResetMarkerMaterial();
+            }
+            return;
+        }
 
+        // 从鼠标发射射线
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        // 只检测删除标记（Layer设置为"DeleteMarker"）
+        int markerLayer = LayerMask.GetMask("DeleteMarker");
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, markerLayer))
+        {
+            // 检查是否击中当前电线的标记
+            if (hit.collider.gameObject == deleteMarkerInstance)
+            {
+                if (!isMarkerHovered)
+                {
+                    isMarkerHovered = true;
+                    SetMarkerMaterial(hoverMarkerMaterial);
+                }
+
+                // 点击删除
+                if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+                {
+                    DeleteThisWire();
+                }
+            }
+            else
+            {
+                if (isMarkerHovered)
+                {
+                    ResetMarkerMaterial();
+                }
+            }
+        }
+        else
+        {
+            if (isMarkerHovered)
+            {
+                ResetMarkerMaterial();
+            }
+        }
+    }
+
+    private void SetMarkerMaterial(Material mat)
+    {
+        Renderer markerRenderer = deleteMarkerInstance?.GetComponent<Renderer>();
+        if (markerRenderer != null && mat != null)
+        {
+            markerRenderer.material = mat;
+        }
+    }
+
+    public void ResetMarkerMaterial()
+    {
+        isMarkerHovered = false;
+        SetMarkerMaterial(normalMarkerMaterial);
+    }
+
+    private void DeleteThisWire()
+    {
+        CircuitConnectionManager.Instance?.DeleteWire(this);
+    }
     /* ---------------- 生成曲线 ---------------- */
     void GenerateCurve()
     {

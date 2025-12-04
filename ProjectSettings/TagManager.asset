@@ -22,8 +22,8 @@ TagManager:
   - CircuitNode
   - CircuitBlock
   - ModelPreview
-  - 
-  - 
+  - Wire
+  - DeleteMarker
   - 
   - 
   - 
