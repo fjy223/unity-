@@ -223,14 +223,12 @@ public class InputSettingsUI : MonoBehaviour
     public void Show()
     {
         settingPanel.SetActive(true);
-        Time.timeScale = 0f;
     }
 
     private void OnBack()
     {
         settingPanel.SetActive(false);
         main.mainPanel.SetActive(true);
-        Time.timeScale = 1f;
     }
 }
 

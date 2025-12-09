@@ -21,13 +21,13 @@ public class HelpUI : MonoBehaviour
     public void Show()
     {
         helpPanel.SetActive(true);
-        Time.timeScale = 0f;
+
     }
 
     private void OnBack()
     {
         helpPanel.SetActive(false);
         main.mainPanel.SetActive(true);
-        Time.timeScale = 1f;
+
     }
 }
