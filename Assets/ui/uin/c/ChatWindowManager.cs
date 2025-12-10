@@ -22,8 +22,13 @@ public class ChatWindowManager : MonoBehaviour
     private List<string> currentTopics = new List<string>();
     private string currentTopic = "";
 
+    [Header("布局设置")]
+    [SerializeField] private float messageSpacing = 10f;
+    [SerializeField] private float verticalPadding = 20f;
+
     private APIManager apiManager;
     private bool isWaitingForResponse = false;
+    private VerticalLayoutGroup contentLayoutGroup;
 
     void Start()
     {
@@ -36,43 +41,75 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
-        // 绑定按钮事件
-        if (sendButton != null)
-            sendButton.onClick.AddListener(OnSendMessage);
-        else
-            Debug.LogError("[ChatWindow] sendButton未赋值");
-
-        if (addTopicButton != null)
-            addTopicButton.onClick.AddListener(OnAddTopic);
-        else
-            Debug.LogError("[ChatWindow] addTopicButton未赋值");
-
-        if (deleteTopicButton != null)
-            deleteTopicButton.onClick.AddListener(OnDeleteTopic);
-        else
-            Debug.LogError("[ChatWindow] deleteTopicButton未赋值");
-
-        if (messageInputField != null)
-            messageInputField.onSubmit.AddListener(OnInputSubmit);
-        else
-            Debug.LogError("[ChatWindow] messageInputField未赋值");
-
-        // 初始化默认话题
-        AddTopicItem("软件使用");
-        AddTopicItem("功能介绍");
-        AddTopicItem("故障排查");
+        SetupContentContainer();
+        SetupScrollRect();
+        BindButtonEvents();
+        InitializeTopics();
 
         Debug.Log("[ChatWindow] 初始化完成");
     }
 
-    /// <summary>
-    /// 发送消息
-    /// </summary>
+    private void SetupContentContainer()
+    {
+        contentLayoutGroup = contentContainer.GetComponent<VerticalLayoutGroup>();
+        if (contentLayoutGroup == null)
+        {
+            contentLayoutGroup = contentContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+        }
+
+        contentLayoutGroup.childAlignment = TextAnchor.UpperLeft;
+        contentLayoutGroup.childControlHeight = false;
+        contentLayoutGroup.childControlWidth = false;  // 改为 false，让气泡自己控制宽度
+        contentLayoutGroup.childForceExpandHeight = false;
+        contentLayoutGroup.childForceExpandWidth = false;
+        contentLayoutGroup.spacing = messageSpacing;
+        contentLayoutGroup.padding = new RectOffset(10, 10, (int)verticalPadding, (int)verticalPadding);
+
+        ContentSizeFitter sizeFitter = contentContainer.GetComponent<ContentSizeFitter>();
+        if (sizeFitter == null)
+        {
+            sizeFitter = contentContainer.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+    }
+
+    private void SetupScrollRect()
+    {
+        if (scrollRect != null)
+        {
+            scrollRect.content = contentContainer as RectTransform;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Elastic;
+        }
+    }
+
+    private void BindButtonEvents()
+    {
+        if (sendButton != null)
+            sendButton.onClick.AddListener(OnSendMessage);
+
+        if (addTopicButton != null)
+            addTopicButton.onClick.AddListener(OnAddTopic);
+
+        if (deleteTopicButton != null)
+            deleteTopicButton.onClick.AddListener(OnDeleteTopic);
+
+        if (messageInputField != null)
+            messageInputField.onSubmit.AddListener(OnInputSubmit);
+    }
+
+    private void InitializeTopics()
+    {
+        AddTopicItem("软件使用");
+        AddTopicItem("功能介绍");
+        AddTopicItem("故障排查");
+    }
+
     private void OnSendMessage()
     {
         string message = messageInputField.text.Trim();
-
-        Debug.Log($"[ChatWindow] 尝试发送消息: '{message}'");
 
         if (string.IsNullOrEmpty(message))
         {
@@ -82,7 +119,7 @@ public class ChatWindowManager : MonoBehaviour
 
         if (isWaitingForResponse)
         {
-            Debug.LogWarning("[ChatWindow] 正在等待API响应，请稍候...");
+            Debug.LogWarning("[ChatWindow] 正在等待API响应");
             return;
         }
 
@@ -92,17 +129,12 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[ChatWindow] 显示用户消息: {message}");
-
-        // 显示用户消息
         DisplayMessage(message, true);
         messageInputField.text = "";
 
-        // 调用API获取回复
         isWaitingForResponse = true;
         sendButton.interactable = false;
 
-        Debug.Log($"[ChatWindow] 调用API，话题: {currentTopic}");
         apiManager.GetAIResponse(message, currentTopic, OnAPIResponse);
     }
 
@@ -111,69 +143,65 @@ public class ChatWindowManager : MonoBehaviour
         OnSendMessage();
     }
 
-    /// <summary>
-    /// 显示消息气泡
-    /// </summary>
     private void DisplayMessage(string message, bool isUserMessage)
     {
-        Debug.Log($"[ChatWindow] DisplayMessage 被调用 - 消息: {message}, 是用户消息: {isUserMessage}");
-
-        if (messageBubblePrefab == null)
+        if (messageBubblePrefab == null || contentContainer == null)
         {
-            Debug.LogError("[ChatWindow] messageBubblePrefab未赋值！");
+            Debug.LogError("[ChatWindow] 缺少必要的引用");
             return;
         }
 
-        if (contentContainer == null)
-        {
-            Debug.LogError("[ChatWindow] contentContainer未赋值！");
-            return;
-        }
-
+        // 实例化气泡
         GameObject bubbleObj = Instantiate(messageBubblePrefab, contentContainer);
-        Debug.Log($"[ChatWindow] 创建气泡对象: {bubbleObj.name}");
+        bubbleObj.name = isUserMessage ? "UserBubble" : "AIBubble";
 
+        // 获取RectTransform
+        RectTransform bubbleRect = bubbleObj.GetComponent<RectTransform>();
+        if (bubbleRect == null)
+        {
+            bubbleRect = bubbleObj.AddComponent<RectTransform>();
+        }
+
+        // 设置气泡在容器中的锚点（全宽）
+        bubbleRect.anchorMin = new Vector2(0, 1);
+        bubbleRect.anchorMax = new Vector2(1, 1);
+        bubbleRect.pivot = new Vector2(0.5f, 1);
+
+        // 设置消息
         MessageBubble bubble = bubbleObj.GetComponent<MessageBubble>();
-        if (bubble != null)
+        if (bubble == null)
         {
-            Debug.Log($"[ChatWindow] 找到MessageBubble组件，设置消息");
-            bubble.SetMessage(message, isUserMessage);
+            bubble = bubbleObj.AddComponent<MessageBubble>();
         }
-        else
-        {
-            Debug.LogError("[ChatWindow] 气泡对象上没有MessageBubble组件！");
-        }
+        bubble.SetMessage(message, isUserMessage);
 
-        // 强制更新布局
-        Canvas.ForceUpdateCanvases();
+        Debug.Log($"[ChatWindow] 显示消息 - 用户消息: {isUserMessage}");
 
-        // 自动滚动到底部
-        if (scrollRect != null)
-        {
-            // 延迟一帧后滚动，确保布局已更新
-            StartCoroutine(ScrollToBottomNextFrame());
-        }
+        StartCoroutine(UpdateLayoutAndScroll());
     }
 
-    /// <summary>
-    /// 延迟滚动到底部（确保布局已更新）
-    /// </summary>
-    private System.Collections.IEnumerator ScrollToBottomNextFrame()
+    private System.Collections.IEnumerator UpdateLayoutAndScroll()
     {
         yield return null;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentContainer as RectTransform);
+        Canvas.ForceUpdateCanvases();
+
         if (scrollRect != null)
         {
-            scrollRect.verticalNormalizedPosition = 0;
-            Debug.Log("[ChatWindow] 滚动到底部");
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+
+        yield return new WaitForEndOfFrame();
+        if (scrollRect != null)
+        {
+            scrollRect.verticalNormalizedPosition = 0f;
         }
     }
 
-    /// <summary>
-    /// API响应回调
-    /// </summary>
     private void OnAPIResponse(string response)
     {
-        Debug.Log($"[ChatWindow] 收到API响应: {response}");
+        Debug.Log($"[ChatWindow] 收到API响应");
 
         isWaitingForResponse = false;
         sendButton.interactable = true;
@@ -188,18 +216,12 @@ public class ChatWindowManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 添加话题
-    /// </summary>
     private void OnAddTopic()
     {
         string newTopic = "新话题_" + System.DateTime.Now.Ticks;
         AddTopicItem(newTopic);
     }
 
-    /// <summary>
-    /// 删除话题
-    /// </summary>
     private void OnDeleteTopic()
     {
         if (!string.IsNullOrEmpty(currentTopic) && currentTopics.Contains(currentTopic))
@@ -210,9 +232,6 @@ public class ChatWindowManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 添加话题项
-    /// </summary>
     private void AddTopicItem(string topicName)
     {
         if (!currentTopics.Contains(topicName))
@@ -227,31 +246,20 @@ public class ChatWindowManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 刷新话题UI
-    /// </summary>
     private void RefreshTopicUI()
     {
         if (topicContainer == null)
-        {
-            Debug.LogError("[ChatWindow] topicContainer未赋值");
             return;
-        }
 
-        // 清空现有话题UI
         foreach (Transform child in topicContainer)
         {
             Destroy(child.gameObject);
         }
 
-        // 重新创建话题按钮
         foreach (string topic in currentTopics)
         {
             if (topicItemPrefab == null)
-            {
-                Debug.LogError("[ChatWindow] topicItemPrefab未赋值");
                 return;
-            }
 
             GameObject topicObj = Instantiate(topicItemPrefab, topicContainer);
             Button topicBtn = topicObj.GetComponent<Button>();
@@ -267,15 +275,11 @@ public class ChatWindowManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 选择话题
-    /// </summary>
     private void SelectTopic(string topic)
     {
         currentTopic = topic;
         Debug.Log($"[ChatWindow] 当前话题: {currentTopic}");
 
-        // 清空消息历史
         foreach (Transform child in contentContainer)
         {
             Destroy(child.gameObject);

@@ -1,114 +1,148 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
 
 public class MessageBubble : MonoBehaviour
 {
     [SerializeField] private Text messageText;
     [SerializeField] private Image bubbleBackground;
-    [SerializeField] private LayoutElement layoutElement;
 
     [SerializeField] private Color userBubbleColor = new Color(0.2f, 0.8f, 0.2f, 0.9f);
     [SerializeField] private Color aiBubbleColor = new Color(0.9f, 0.9f, 0.9f, 0.9f);
 
-    [SerializeField] private float maxWidth = 300f;  // 限制最大宽度
-    [SerializeField] private float minHeight = 50f;
+    [SerializeField] private float maxWidth = 400f;
+    [SerializeField] private float minHeight = 60f;
+    [SerializeField] private float horizontalPadding = 15f;
+    [SerializeField] private float verticalPadding = 10f;
 
-    private void OnEnable()
+    // 字体参数
+    [SerializeField] private float charWidth = 30f;      // 单个字符平均宽度
+    [SerializeField] private float lineHeight = 45f;     // 行高
+
+    private RectTransform rectTransform;
+    private RectTransform textRectTransform;
+    private bool isUserMessage;
+
+    private void Awake()
     {
-        Debug.Log("[MessageBubble] OnEnable - 检查组件");
+        rectTransform = GetComponent<RectTransform>();
 
         if (messageText == null)
-        {
             messageText = GetComponentInChildren<Text>();
-            Debug.Log($"[MessageBubble] 自动查找messageText: {(messageText != null ? "成功" : "失败")}");
-        }
+
+        if (messageText != null)
+            textRectTransform = messageText.GetComponent<RectTransform>();
 
         if (bubbleBackground == null)
-        {
             bubbleBackground = GetComponent<Image>();
-            Debug.Log($"[MessageBubble] 自动查找bubbleBackground: {(bubbleBackground != null ? "成功" : "失败")}");
-        }
-
-        if (layoutElement == null)
-        {
-            layoutElement = GetComponent<LayoutElement>();
-            if (layoutElement == null)
-            {
-                layoutElement = gameObject.AddComponent<LayoutElement>();
-                Debug.Log("[MessageBubble] 添加了LayoutElement组件");
-            }
-        }
     }
 
     public void SetMessage(string message, bool isUserMessage)
     {
-        Debug.Log($"[MessageBubble] SetMessage 被调用 - 消息: {message}, 是用户消息: {isUserMessage}");
+        this.isUserMessage = isUserMessage;
 
-        // 确保有Text组件
         if (messageText == null)
         {
             messageText = GetComponentInChildren<Text>();
-            if (messageText == null)
-            {
-                Debug.LogError("[MessageBubble] 找不到Text组件！");
-                return;
-            }
+            if (messageText != null)
+                textRectTransform = messageText.GetComponent<RectTransform>();
         }
 
-        // 设置文本
         messageText.text = message;
-        Debug.Log($"[MessageBubble] 文本已设置: {messageText.text}");
+        messageText.alignment = TextAnchor.UpperLeft;
 
-        // 设置背景颜色
+        // 设置气泡颜色
         if (bubbleBackground != null)
-        {
             bubbleBackground.color = isUserMessage ? userBubbleColor : aiBubbleColor;
-        }
 
-        // 强制更新Canvas以获取正确的preferredHeight
+        // 强制更新画布
         Canvas.ForceUpdateCanvases();
 
-        // 配置LayoutElement
-        if (layoutElement == null)
+        // 计算并设置大小
+        CalculateAndSetSize(message);
+
+        // 设置对齐
+        SetupAlignment();
+
+        Debug.Log($"[MessageBubble] 消息设置完成 - 用户消息: {isUserMessage}, 消息长度: {message.Length}");
+    }
+
+    private void CalculateAndSetSize(string message)
+    {
+        if (messageText == null || rectTransform == null)
+            return;
+
+        // 计算需要的行数
+        int messageLength = message.Length;
+        float textMaxWidth = maxWidth - horizontalPadding * 2;
+
+        // 每行能容纳的字符数
+        int charsPerLine = Mathf.Max(1, Mathf.FloorToInt(textMaxWidth / charWidth));
+
+        // 计算需要的行数
+        int lineCount = Mathf.CeilToInt((float)messageLength / charsPerLine);
+        lineCount = Mathf.Max(1, lineCount);
+
+        // 计算文本的实际宽度和高度
+        float textWidth;
+        float textHeight;
+
+        if (messageLength <= charsPerLine)
         {
-            layoutElement = GetComponent<LayoutElement>();
-        }
-
-        if (layoutElement != null)
-        {
-            // 计算所需高度（文本高度 + 内边距）
-            float preferredHeight = messageText.preferredHeight + 20;
-            float preferredWidth = Mathf.Min(messageText.preferredWidth + 20, maxWidth);
-
-            layoutElement.preferredHeight = Mathf.Max(preferredHeight, minHeight);
-            layoutElement.preferredWidth = preferredWidth;
-
-            Debug.Log($"[MessageBubble] 设置大小 - 宽: {layoutElement.preferredWidth}, 高: {layoutElement.preferredHeight}");
-        }
-
-        // 配置RectTransform和对齐方式
-        RectTransform rectTransform = GetComponent<RectTransform>();
-
-        if (isUserMessage)
-        {
-            // 用户消息靠右
-            rectTransform.anchorMin = new Vector2(1, 1);
-            rectTransform.anchorMax = new Vector2(1, 1);
-            rectTransform.pivot = new Vector2(1, 1);
-        
-
-            Debug.Log("[MessageBubble] 用户消息 - 靠右对齐");
+            // 单行
+            textWidth = messageLength * charWidth;
+            textHeight = lineHeight;
         }
         else
         {
-            // AI消息靠左
+            // 多行
+            textWidth = textMaxWidth;
+            textHeight = lineCount * lineHeight;
+        }
+
+        // 计算气泡总大小（包括内边距）
+        float bubbleWidth = textWidth + horizontalPadding * 2;
+        float bubbleHeight = textHeight + verticalPadding * 2;
+
+        // 限制最大宽度
+        bubbleWidth = Mathf.Min(bubbleWidth, maxWidth);
+
+        // 应用最小高度
+        bubbleHeight = Mathf.Max(bubbleHeight, minHeight);
+
+        // 直接设置气泡的 RectTransform 大小
+        rectTransform.sizeDelta = new Vector2(bubbleWidth, bubbleHeight);
+
+        // 设置文本的 RectTransform 大小
+        if (textRectTransform != null)
+        {
+            textRectTransform.sizeDelta = new Vector2(textWidth, textHeight);
+        }
+
+        Debug.Log($"[MessageBubble] 计算结果 - 消息长度: {messageLength}, 每行字符: {charsPerLine}, 行数: {lineCount}");
+        Debug.Log($"[MessageBubble] 文本大小 - 宽: {textWidth}, 高: {textHeight}");
+        Debug.Log($"[MessageBubble] 气泡大小 - 宽: {bubbleWidth}, 高: {bubbleHeight}");
+    }
+
+    private void SetupAlignment()
+    {
+        if (rectTransform == null)
+            return;
+
+        if (isUserMessage)
+        {
+            // 用户消息：右对齐
+            rectTransform.anchorMin = new Vector2(1, 1);
+            rectTransform.anchorMax = new Vector2(1, 1);
+            rectTransform.pivot = new Vector2(1, 1);
+        }
+        else
+        {
+            // AI消息：左对齐
             rectTransform.anchorMin = new Vector2(0, 1);
             rectTransform.anchorMax = new Vector2(0, 1);
             rectTransform.pivot = new Vector2(0, 1);
-
-
-            Debug.Log("[MessageBubble] AI消息 - 靠左对齐");
         }
+
+        rectTransform.anchoredPosition = Vector2.zero;
     }
 }
