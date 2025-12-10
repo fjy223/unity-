@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: B30WtC2oVXPJ2ApPLkMsPg1/maJhvjzRdi4uEWgyTQZnI4GLR4+S9hE=
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Nowar Neo Sans CN OSF UI
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
