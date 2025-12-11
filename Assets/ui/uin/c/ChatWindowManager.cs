@@ -46,9 +46,17 @@ public class ChatWindowManager : MonoBehaviour
         BindButtonEvents();
         InitializeTopics();
 
+        AddTestBubbles();//测试文本
+
         Debug.Log("[ChatWindow] 初始化完成");
     }
 
+    private void AddTestBubbles()//测试文本
+    {
+        DisplayMessage("你好，我是AI助手。有什么我可以帮助你的吗？", false);
+        DisplayMessage("这是一条用户消息，用来测试气泡的显示效果。", true);
+        DisplayMessage("这是一条很长很长很长的AI回复消息，用来测试多行文本的换行效果和气泡的自适应大小。希望能正确显示。", false);
+    }
     private void SetupContentContainer()
     {
         contentLayoutGroup = contentContainer.GetComponent<VerticalLayoutGroup>();
