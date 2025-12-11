@@ -8,7 +8,7 @@ public class APIManager : MonoBehaviour
     [Header("API 配置")]
     [SerializeField] private string apiEndpoint = "https://api.deepseek.com/chat/completions";
     [SerializeField] private string apiKey = "sk-f0cae472e3ca4236abbcecb8af4d3557";
-    [SerializeField] private string model = "deepseek-chat";  // 改为 deepseek-chat
+    [SerializeField] private string model = "deepseek-chat";
 
     [Header("系统提示")]
     [TextArea(3, 5)]

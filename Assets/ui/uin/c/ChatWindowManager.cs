@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using System.IO;
 
 public class ChatWindowManager : MonoBehaviour
 {
@@ -13,14 +14,13 @@ public class ChatWindowManager : MonoBehaviour
     [SerializeField] private Button addTopicButton;
     [SerializeField] private Button deleteTopicButton;
 
+    [Header("话题滚动视图")]  // ← 新增
+    [SerializeField] private ScrollRect topicScrollRect;  // ← 新增
+    [SerializeField] private Transform topicContainer;
+
     [Header("预制体")]
     [SerializeField] private GameObject messageBubblePrefab;
     [SerializeField] private GameObject topicItemPrefab;
-
-    [Header("话题管理")]
-    [SerializeField] private Transform topicContainer;
-    private List<string> currentTopics = new List<string>();
-    private string currentTopic = "";
 
     [Header("布局设置")]
     [SerializeField] private float messageSpacing = 10f;
@@ -29,6 +29,11 @@ public class ChatWindowManager : MonoBehaviour
     private APIManager apiManager;
     private bool isWaitingForResponse = false;
     private VerticalLayoutGroup contentLayoutGroup;
+    private VerticalLayoutGroup topicLayoutGroup;  // ← 新增
+
+    private string saveFolder;
+    private string saveFileName => Path.Combine(saveFolder, "chat_history.json");
+    private List<TopicData> allTopics = new List<TopicData>();
 
     void Start()
     {
@@ -41,21 +46,109 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
+        // 初始化保存路径
+        saveFolder = Path.Combine(Application.persistentDataPath, "ChatHistory");
+        if (!Directory.Exists(saveFolder))
+        {
+            Directory.CreateDirectory(saveFolder);
+        }
+
         SetupContentContainer();
         SetupScrollRect();
+        SetupTopicContainer();  // ← 新增
         BindButtonEvents();
-        InitializeTopics();
 
-        AddTestBubbles();
+        // 1. 先读盘
+        LoadFromDisk();
+        // 2. 根据读出来的数据刷新 UI
+        PopulateTopicButtons();
+        // 3. 把第一个话题的聊天记录刷到聊天窗里
+        if (allTopics.Count > 0)
+        {
+            currentTopic = allTopics[0].topicName;
+            SelectTopic(currentTopic);
+        }
 
         Debug.Log("[ChatWindow] 初始化完成");
     }
 
-    private void AddTestBubbles()
+    // ===== 新增方法：设置话题容器 =====
+    private void SetupTopicContainer()
     {
-        DisplayMessage("你好，我是AI助手。有什么我可以帮助你的吗？", false);
-        DisplayMessage("这是一条用户消息，用来测试气泡的显示效果。", true);
-        DisplayMessage("这是一条很长很长很长的AI回复消息，用来测试多行文本的换行效果和气泡的自适应大小。希望能正确显示。", false);
+        if (topicContainer == null)
+        {
+            Debug.LogError("[ChatWindow] topicContainer 未设置！");
+            return;
+        }
+
+        topicLayoutGroup = topicContainer.GetComponent<VerticalLayoutGroup>();
+        if (topicLayoutGroup == null)
+        {
+            topicLayoutGroup = topicContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+        }
+
+        topicLayoutGroup.childAlignment = TextAnchor.UpperLeft;
+        topicLayoutGroup.childControlHeight = false;
+        topicLayoutGroup.childControlWidth = false;
+        topicLayoutGroup.childForceExpandHeight = false;
+        topicLayoutGroup.childForceExpandWidth = true;  // 让按钮充满宽度
+        topicLayoutGroup.spacing = 5f;
+        topicLayoutGroup.padding = new RectOffset(5, 5, 5, 5);
+
+        ContentSizeFitter sizeFitter = topicContainer.GetComponent<ContentSizeFitter>();
+        if (sizeFitter == null)
+        {
+            sizeFitter = topicContainer.gameObject.AddComponent<ContentSizeFitter>();
+        }
+        sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        // 设置滚动视图
+        if (topicScrollRect != null)
+        {
+            topicScrollRect.content = topicContainer as RectTransform;
+            topicScrollRect.horizontal = false;
+            topicScrollRect.vertical = true;
+            topicScrollRect.movementType = ScrollRect.MovementType.Elastic;
+        }
+
+        Debug.Log("[ChatWindow] 话题容器设置完成");
+    }
+
+    // 仅用于启动时：把 json 里所有话题名一次性读到 UI
+    private void PopulateTopicButtons()
+    {
+        // 清空旧按钮
+        foreach (Transform t in topicContainer)
+            Destroy(t.gameObject);
+
+        // 按 json 顺序建按钮
+        for (int i = 0; i < allTopics.Count; i++)
+        {
+            TopicData tp = allTopics[i];
+            GameObject btnGo = Instantiate(topicItemPrefab, topicContainer);
+
+            // 获取按钮上的文本
+            Text txt = btnGo.GetComponentInChildren<Text>();
+            if (txt != null)
+                txt.text = tp.topicName;
+
+            // 点按钮就切话题
+            string captureName = tp.topicName;
+            Button btn = btnGo.GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.onClick.AddListener(() => SelectTopic(captureName));
+            }
+
+            Debug.Log($"[ChatWindow] 创建话题按钮: {tp.topicName}");
+        }
+
+        // 重建布局
+        if (topicScrollRect != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(topicContainer as RectTransform);
+        }
     }
 
     private void SetupContentContainer()
@@ -109,13 +202,6 @@ public class ChatWindowManager : MonoBehaviour
             messageInputField.onSubmit.AddListener(OnInputSubmit);
     }
 
-    private void InitializeTopics()
-    {
-        AddTopicItem("软件使用");
-        AddTopicItem("功能介绍");
-        AddTopicItem("故障排查");
-    }
-
     private void OnSendMessage()
     {
         string message = messageInputField.text.Trim();
@@ -138,6 +224,8 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
+        // 记录用户消息
+        AppendMessageToCurrentTopic(message, true);
         DisplayMessage(message, true);
         messageInputField.text = "";
 
@@ -160,7 +248,7 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
-        // 实例化气泡预制体（包含组件A、B和文本）
+        // 实例化气泡预制体
         GameObject bubbleObj = Instantiate(messageBubblePrefab, contentContainer);
         bubbleObj.name = isUserMessage ? "UserBubble" : "AIBubble";
 
@@ -208,6 +296,8 @@ public class ChatWindowManager : MonoBehaviour
         if (!string.IsNullOrEmpty(response))
         {
             DisplayMessage(response, false);
+            // 记录 AI 回复
+            AppendMessageToCurrentTopic(response, false);
         }
         else
         {
@@ -217,71 +307,182 @@ public class ChatWindowManager : MonoBehaviour
 
     private void OnAddTopic()
     {
-        string newTopic = "新话题_" + System.DateTime.Now.Ticks;
-        AddTopicItem(newTopic);
+        // ===== 改动：使用年月日时分秒作为话题名 =====
+        System.DateTime now = System.DateTime.Now;
+        string newTopic = now.ToString("yyyy-MM-dd HH:mm:ss");
+
+        // 创建新话题数据
+        TopicData newTopicData = new TopicData
+        {
+            topicName = newTopic,
+            messages = new List<MessageData>()
+        };
+
+        allTopics.Add(newTopicData);
+        SaveToDisk();
+        PopulateTopicButtons();
+        SelectTopic(newTopic);
+
+        Debug.Log($"[ChatWindow] 新增话题: {newTopic}");
     }
+
 
     private void OnDeleteTopic()
     {
-        if (!string.IsNullOrEmpty(currentTopic) && currentTopics.Contains(currentTopic))
+        if (string.IsNullOrEmpty(currentTopic))
         {
-            currentTopics.Remove(currentTopic);
-            RefreshTopicUI();
-            currentTopic = currentTopics.Count > 0 ? currentTopics[0] : "";
-        }
-    }
-
-    private void AddTopicItem(string topicName)
-    {
-        if (!currentTopics.Contains(topicName))
-        {
-            currentTopics.Add(topicName);
-            RefreshTopicUI();
-
-            if (string.IsNullOrEmpty(currentTopic))
-            {
-                SelectTopic(topicName);
-            }
-        }
-    }
-
-    private void RefreshTopicUI()
-    {
-        if (topicContainer == null)
+            Debug.LogWarning("[ChatWindow] 没有选中的话题");
             return;
-
-        foreach (Transform child in topicContainer)
-        {
-            Destroy(child.gameObject);
         }
 
-        foreach (string topic in currentTopics)
+        // 从 allTopics 中删除
+        int index = allTopics.FindIndex(t => t.topicName == currentTopic);
+        if (index >= 0)
         {
-            if (topicItemPrefab == null)
-                return;
+            allTopics.RemoveAt(index);
+            SaveToDisk();
 
-            GameObject topicObj = Instantiate(topicItemPrefab, topicContainer);
-            Button topicBtn = topicObj.GetComponent<Button>();
-            TextMeshProUGUI topicText = topicObj.GetComponentInChildren<TextMeshProUGUI>();
-
-            if (topicText != null)
-                topicText.text = topic;
-
-            if (topicBtn != null)
+            // 切换到其他话题
+            if (allTopics.Count > 0)
             {
-                topicBtn.onClick.AddListener(() => SelectTopic(topic));
+                currentTopic = allTopics[0].topicName;
             }
+            else
+            {
+                currentTopic = "";
+            }
+
+            PopulateTopicButtons();
+            SelectTopic(currentTopic);
+
+            Debug.Log($"[ChatWindow] 删除话题成功");
         }
     }
+
+    private string currentTopic = "";  // ← 补充声明
 
     private void SelectTopic(string topic)
     {
+        if (string.IsNullOrEmpty(topic))
+        {
+            Debug.LogWarning("[ChatWindow] 话题名为空");
+            return;
+        }
+
         currentTopic = topic;
         Debug.Log($"[ChatWindow] 当前话题: {currentTopic}");
 
+        // 清空聊天窗
         foreach (Transform child in contentContainer)
-        {
             Destroy(child.gameObject);
+
+        // 把该话题的历史消息全部重放一遍
+        var topicData = allTopics.Find(t => t.topicName == currentTopic);
+        if (topicData != null)
+        {
+            foreach (var msg in topicData.messages)
+            {
+                DisplayMessage(msg.text, msg.isUser);
+            }
+            Debug.Log($"[ChatWindow] 加载话题 '{currentTopic}' 的 {topicData.messages.Count} 条消息");
+        }
+    }
+
+    private void AppendMessageToCurrentTopic(string text, bool isUser)
+    {
+        // 找到当前话题
+        var topic = allTopics.Find(t => t.topicName == currentTopic);
+        if (topic == null)
+        {
+            Debug.LogError($"[ChatWindow] 找不到话题: {currentTopic}");
+            return;
+        }
+
+        topic.messages.Add(new MessageData
+        {
+            isUser = isUser,
+            text = text,
+            utcTicks = System.DateTime.UtcNow.Ticks
+        });
+
+        SaveToDisk();
+        Debug.Log($"[ChatWindow] 消息已保存到话题 '{currentTopic}'");
+    }
+
+    // ===== 数据结构 =====
+    [System.Serializable]
+    public class TopicData
+    {
+        public string topicName;
+        public List<MessageData> messages;
+    }
+
+    [System.Serializable]
+    public class MessageData
+    {
+        public bool isUser;
+        public string text;
+        public long utcTicks;
+    }
+
+    [System.Serializable]
+    private class SerializationWrapper
+    {
+        public List<TopicData> list;
+    }
+
+    // ===== 文件操作 =====
+    private void SaveToDisk()
+    {
+        try
+        {
+            string json = JsonUtility.ToJson(new SerializationWrapper { list = allTopics }, true);
+            File.WriteAllText(saveFileName, json, System.Text.Encoding.UTF8);
+            Debug.Log($"[ChatWindow] 数据已保存到: {saveFileName}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ChatWindow] 保存失败: {e.Message}");
+        }
+    }
+
+    private void LoadFromDisk()
+    {
+        try
+        {
+            if (!File.Exists(saveFileName))
+            {
+                Debug.Log($"[ChatWindow] 文件不存在，创建默认数据");
+                allTopics = new List<TopicData>
+                {
+                    new TopicData
+                    {
+                        topicName = "默认话题",
+                        messages = new List<MessageData>
+                        {
+                            new MessageData
+                            {
+                                isUser = false,
+                                text = "你好，我是AI助手。有什么我可以帮助你的吗？",
+                                utcTicks = System.DateTime.UtcNow.Ticks
+                            }
+                        }
+                    }
+                };
+                SaveToDisk();
+                return;
+            }
+
+            string json = File.ReadAllText(saveFileName, System.Text.Encoding.UTF8);
+            SerializationWrapper wrapper = JsonUtility.FromJson<SerializationWrapper>(json);
+            allTopics = wrapper.list ?? new List<TopicData>();
+
+            Debug.Log($"[ChatWindow] 从文件加载了 {allTopics.Count} 个话题");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ChatWindow] 加载失败: {e.Message}");
+            allTopics = new List<TopicData>();
         }
     }
 }
