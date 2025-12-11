@@ -3,36 +3,76 @@ using UnityEngine.UI;
 
 public class MessageBubble : MonoBehaviour
 {
-    [SerializeField] private Text messageText;
-    [SerializeField] private Image bubbleBackground;
+    [Header("预制体 - 组件A（透明容器）")]
+    [SerializeField] private float containerWidth = 500f;  // 容器A的固定宽度，可在Unity中修改
+    private RectTransform containerRect;
+    private Image containerImage;
+    private HorizontalLayoutGroup horizontalLayoutGroup;
 
+    [Header("预制体 - 组件B（气泡）")]
+    [SerializeField] private Image bubbleBackground;
     [SerializeField] private Color userBubbleColor = new Color(0.2f, 0.8f, 0.2f, 0.9f);
     [SerializeField] private Color aiBubbleColor = new Color(0.9f, 0.9f, 0.9f, 0.9f);
-
     [SerializeField] private float maxWidth = 400f;
     [SerializeField] private float minHeight = 60f;
     [SerializeField] private float horizontalPadding = 15f;
     [SerializeField] private float verticalPadding = 10f;
 
+    [Header("预制体 - 文本组件")]
+    [SerializeField] private Text messageText;
     [SerializeField] private float charWidth = 30f;
     [SerializeField] private float lineHeight = 45f;
 
-    private RectTransform rectTransform;
+    private RectTransform bubbleRect;
     private RectTransform textRectTransform;
     private bool isUserMessage;
 
     private void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
+        // 获取当前对象的 RectTransform（这是组件A - 容器）
+        containerRect = GetComponent<RectTransform>();
 
-        if (messageText == null)
-            messageText = GetComponentInChildren<Text>();
+        // 获取或添加容器的 Image 组件（透明）
+        containerImage = GetComponent<Image>();
+        if (containerImage == null)
+        {
+            containerImage = gameObject.AddComponent<Image>();
+        }
+        containerImage.color = new Color(1, 1, 1, 0);  // 完全透明
+        containerImage.raycastTarget = false;
 
-        if (messageText != null)
-            textRectTransform = messageText.GetComponent<RectTransform>();
+        // ===== 关键改动：获取或添加 HorizontalLayoutGroup =====
+        horizontalLayoutGroup = GetComponent<HorizontalLayoutGroup>();
+        if (horizontalLayoutGroup == null)
+        {
+            horizontalLayoutGroup = gameObject.AddComponent<HorizontalLayoutGroup>();
+        }
 
-        if (bubbleBackground == null)
-            bubbleBackground = GetComponent<Image>();
+        // 配置 HorizontalLayoutGroup
+        horizontalLayoutGroup.childControlHeight = false;
+        horizontalLayoutGroup.childControlWidth = false;
+        horizontalLayoutGroup.childForceExpandHeight = false;
+        horizontalLayoutGroup.childForceExpandWidth = false;
+        horizontalLayoutGroup.spacing = 0;
+        horizontalLayoutGroup.padding = new RectOffset(0, 0, 0, 0);
+
+        // 获取气泡（组件B）- 应该是这个对象的第一个子物体
+        if (transform.childCount > 0)
+        {
+            Transform bubbleTransform = transform.GetChild(0);
+            bubbleRect = bubbleTransform.GetComponent<RectTransform>();
+            bubbleBackground = bubbleTransform.GetComponent<Image>();
+
+            // 获取文本 - 应该是气泡的第一个子物体
+            if (bubbleTransform.childCount > 0)
+            {
+                messageText = bubbleTransform.GetChild(0).GetComponent<Text>();
+                if (messageText != null)
+                {
+                    textRectTransform = messageText.GetComponent<RectTransform>();
+                }
+            }
+        }
 
         SetupRoundedCorners();
     }
@@ -42,10 +82,8 @@ public class MessageBubble : MonoBehaviour
         if (bubbleBackground == null)
             return;
 
-        // 方法1: 使用 Image 的 pixelsPerUnitMultiplier
         bubbleBackground.pixelsPerUnitMultiplier = 1f;
 
-        // 方法2: 添加 Shadow 效果增强视觉
         Shadow shadow = bubbleBackground.GetComponent<Shadow>();
         if (shadow == null)
         {
@@ -63,9 +101,8 @@ public class MessageBubble : MonoBehaviour
 
         if (messageText == null)
         {
-            messageText = GetComponentInChildren<Text>();
-            if (messageText != null)
-                textRectTransform = messageText.GetComponent<RectTransform>();
+            Debug.LogError("[MessageBubble] 找不到文本组件");
+            return;
         }
 
         messageText.text = message;
@@ -83,7 +120,7 @@ public class MessageBubble : MonoBehaviour
 
     private void CalculateAndSetSize(string message)
     {
-        if (messageText == null || rectTransform == null)
+        if (messageText == null || bubbleRect == null)
             return;
 
         int messageLength = message.Length;
@@ -113,32 +150,48 @@ public class MessageBubble : MonoBehaviour
         bubbleWidth = Mathf.Min(bubbleWidth, maxWidth);
         bubbleHeight = Mathf.Max(bubbleHeight, minHeight);
 
-        rectTransform.sizeDelta = new Vector2(bubbleWidth, bubbleHeight);
+        // ===== 设置组件B（气泡）的大小 =====
+        bubbleRect.sizeDelta = new Vector2(bubbleWidth, bubbleHeight);
+
+        // ===== 设置组件A（容器）的大小 =====
+        // 宽度固定为 containerWidth，高度根据气泡高度计算
+        if (containerRect != null)
+        {
+            containerRect.sizeDelta = new Vector2(containerWidth, bubbleHeight);
+        }
 
         if (textRectTransform != null)
         {
             textRectTransform.sizeDelta = new Vector2(textWidth, textHeight);
         }
+
+        Debug.Log($"[MessageBubble] 容器A大小 - 宽: {containerWidth}, 高: {bubbleHeight}");
+        Debug.Log($"[MessageBubble] 气泡B大小 - 宽: {bubbleWidth}, 高: {bubbleHeight}");
     }
 
     private void SetupAlignment()
     {
-        if (rectTransform == null)
+        if (bubbleRect == null || horizontalLayoutGroup == null)
             return;
 
+        // ===== 关键改动：通过改变 HorizontalLayoutGroup 的 childAlignment 来控制气泡位置 =====
         if (isUserMessage)
         {
-            rectTransform.anchorMin = new Vector2(1, 1);
-            rectTransform.anchorMax = new Vector2(1, 1);
-            rectTransform.pivot = new Vector2(1, 1);
+            // 用户消息：气泡在右边
+            horizontalLayoutGroup.childAlignment = TextAnchor.MiddleRight;
+            Debug.Log("[MessageBubble] 用户消息 - 气泡在右边");
         }
         else
         {
-            rectTransform.anchorMin = new Vector2(0, 1);
-            rectTransform.anchorMax = new Vector2(0, 1);
-            rectTransform.pivot = new Vector2(0, 1);
+            // AI消息：气泡在左边
+            horizontalLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
+            Debug.Log("[MessageBubble] AI消息 - 气泡在左边");
         }
 
-        rectTransform.anchoredPosition = Vector2.zero;
+        // 气泡的锚点设置为中心（由 HorizontalLayoutGroup 控制位置）
+        bubbleRect.anchorMin = new Vector2(0.5f, 0.5f);
+        bubbleRect.anchorMax = new Vector2(0.5f, 0.5f);
+        bubbleRect.pivot = new Vector2(0.5f, 0.5f);
+        bubbleRect.anchoredPosition = Vector2.zero;
     }
 }

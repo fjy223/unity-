@@ -46,17 +46,18 @@ public class ChatWindowManager : MonoBehaviour
         BindButtonEvents();
         InitializeTopics();
 
-        AddTestBubbles();//测试文本
+        AddTestBubbles();
 
         Debug.Log("[ChatWindow] 初始化完成");
     }
 
-    private void AddTestBubbles()//测试文本
+    private void AddTestBubbles()
     {
         DisplayMessage("你好，我是AI助手。有什么我可以帮助你的吗？", false);
         DisplayMessage("这是一条用户消息，用来测试气泡的显示效果。", true);
         DisplayMessage("这是一条很长很长很长的AI回复消息，用来测试多行文本的换行效果和气泡的自适应大小。希望能正确显示。", false);
     }
+
     private void SetupContentContainer()
     {
         contentLayoutGroup = contentContainer.GetComponent<VerticalLayoutGroup>();
@@ -67,7 +68,7 @@ public class ChatWindowManager : MonoBehaviour
 
         contentLayoutGroup.childAlignment = TextAnchor.UpperLeft;
         contentLayoutGroup.childControlHeight = false;
-        contentLayoutGroup.childControlWidth = false;  // 改为 false，让气泡自己控制宽度
+        contentLayoutGroup.childControlWidth = false;
         contentLayoutGroup.childForceExpandHeight = false;
         contentLayoutGroup.childForceExpandWidth = false;
         contentLayoutGroup.spacing = messageSpacing;
@@ -159,28 +160,18 @@ public class ChatWindowManager : MonoBehaviour
             return;
         }
 
-        // 实例化气泡
+        // 实例化气泡预制体（包含组件A、B和文本）
         GameObject bubbleObj = Instantiate(messageBubblePrefab, contentContainer);
         bubbleObj.name = isUserMessage ? "UserBubble" : "AIBubble";
 
-        // 获取RectTransform
-        RectTransform bubbleRect = bubbleObj.GetComponent<RectTransform>();
-        if (bubbleRect == null)
-        {
-            bubbleRect = bubbleObj.AddComponent<RectTransform>();
-        }
-
-        // 设置气泡在容器中的锚点（全宽）
-        bubbleRect.anchorMin = new Vector2(0, 1);
-        bubbleRect.anchorMax = new Vector2(1, 1);
-        bubbleRect.pivot = new Vector2(0.5f, 1);
-
-        // 设置消息
+        // 获取 MessageBubble 脚本
         MessageBubble bubble = bubbleObj.GetComponent<MessageBubble>();
         if (bubble == null)
         {
             bubble = bubbleObj.AddComponent<MessageBubble>();
         }
+
+        // 设置消息
         bubble.SetMessage(message, isUserMessage);
 
         Debug.Log($"[ChatWindow] 显示消息 - 用户消息: {isUserMessage}");
