@@ -8150,6 +8150,7 @@ MonoBehaviour:
     completionCondition: 1
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u4E0B\u4E00\u6B65\u6253\u5F00\u4EFB\u52A1\u83DC\u5355"
   - missionID: 2
@@ -8165,6 +8166,7 @@ MonoBehaviour:
     completionCondition: 2
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u5B8C\u6210\u4E86\u7684\u4EFB\u52A1\u663E\u793A\u7070\u8272"
   - missionID: 3
@@ -8180,6 +8182,7 @@ MonoBehaviour:
     completionCondition: 3
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u4E0B\u4E00\u6B65\u5F00\u59CB\u5B66\u4E60\u521B\u5EFA\u7EC4\u4EF6"
   - missionID: 4
@@ -8195,6 +8198,7 @@ MonoBehaviour:
     completionCondition: 4
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u70B9\u51FB\u7535\u6C60\u6309\u94AE\u521B\u5EFA\u7535\u6C60"
   - missionID: 5
@@ -8210,6 +8214,7 @@ MonoBehaviour:
     completionCondition: 8
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 0
     completionMessage: 
   - missionID: 6
@@ -8225,6 +8230,7 @@ MonoBehaviour:
     completionCondition: 5
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u5B8C\u6210"
   - missionID: 7
@@ -8240,6 +8246,7 @@ MonoBehaviour:
     completionCondition: 6
     targetComponents: []
     targetNodes: []
+    targetButtons: []
     showCompletionPanel: 1
     completionMessage: "\u5B8C\u6210\u5F53\u524D\u6559\u5B66"
   guideSystem: {fileID: 1844803205}

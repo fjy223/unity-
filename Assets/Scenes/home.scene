@@ -285,6 +285,10 @@ MonoBehaviour:
   minHeight: 0.55
   arrowObj: {fileID: 922942952}
   arrowSpeed: 2
+  deleteMarkerPrefab: {fileID: 0}
+  markerHeight: 2
+  normalMarkerMaterial: {fileID: 0}
+  hoverMarkerMaterial: {fileID: 0}
 --- !u!120 &136160944
 LineRenderer:
   serializedVersion: 2
@@ -1526,6 +1530,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2203003046279447845, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3354749878396075958, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1772,12 +1780,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6731806028517081684, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0008463783
+      value: -0.0005302554
+      objectReference: {fileID: 0}
+    - target: {fileID: 6871950669497509597, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
+      propertyPath: m_Text
+      value: "\u4F5C\u8005\u4FE1\u606F"
       objectReference: {fileID: 0}
     - target: {fileID: 7595017719128046820, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 963194227}
+    - target: {fileID: 8216805907143977890, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 8999079169012559388, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1796,6 +1812,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3354749878396075958, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
       insertIndex: 4
       addedObject: {fileID: 1321434291}
+    - targetCorrespondingSourceObject: {fileID: 3864478652099590498, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 730466562}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
 --- !u!1 &350189526
@@ -2925,6 +2944,86 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6731806028517081684, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
   m_PrefabInstance: {fileID: 301430688}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &730466561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 730466562}
+  - component: {fileID: 730466564}
+  - component: {fileID: 730466563}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: Text (Legacy)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &730466562
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730466561}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2069918331}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 5.294, y: 110.219}
+  m_SizeDelta: {x: 619.049, y: 422.418}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &730466563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730466561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 25
+    m_FontStyle: 1
+    m_BestFit: 0
+    m_MinSize: 2
+    m_MaxSize: 40
+    m_Alignment: 1
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: "\u5236\u4F5C\u4EBA\uFF1A\u65B9\u6C5F\u8D8A"
+--- !u!222 &730466564
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730466561}
+  m_CullTransparentMesh: 1
 --- !u!1 &736307530
 GameObject:
   m_ObjectHideFlags: 0
@@ -4038,6 +4137,10 @@ MonoBehaviour:
   minHeight: 0.55
   arrowObj: {fileID: 595009613}
   arrowSpeed: 2
+  deleteMarkerPrefab: {fileID: 0}
+  markerHeight: 2
+  normalMarkerMaterial: {fileID: 0}
+  hoverMarkerMaterial: {fileID: 0}
 --- !u!120 &973466946
 LineRenderer:
   serializedVersion: 2
@@ -5025,6 +5128,10 @@ MonoBehaviour:
   minHeight: 0.55
   arrowObj: {fileID: 147598213}
   arrowSpeed: 2
+  deleteMarkerPrefab: {fileID: 0}
+  markerHeight: 2
+  normalMarkerMaterial: {fileID: 0}
+  hoverMarkerMaterial: {fileID: 0}
 --- !u!120 &1594399983
 LineRenderer:
   serializedVersion: 2
@@ -5272,6 +5379,10 @@ MonoBehaviour:
   minHeight: 0.55
   arrowObj: {fileID: 1892489683}
   arrowSpeed: 2
+  deleteMarkerPrefab: {fileID: 0}
+  markerHeight: 2
+  normalMarkerMaterial: {fileID: 0}
+  hoverMarkerMaterial: {fileID: 0}
 --- !u!120 &1621393601
 LineRenderer:
   serializedVersion: 2
@@ -6115,6 +6226,10 @@ MonoBehaviour:
   minHeight: 0.55
   arrowObj: {fileID: 646070749}
   arrowSpeed: 2
+  deleteMarkerPrefab: {fileID: 0}
+  markerHeight: 2
+  normalMarkerMaterial: {fileID: 0}
+  hoverMarkerMaterial: {fileID: 0}
 --- !u!120 &1820461034
 LineRenderer:
   serializedVersion: 2
@@ -6738,6 +6853,11 @@ Transform:
 --- !u!1 &2069918328 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 515557788180745433, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
+  m_PrefabInstance: {fileID: 301430688}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &2069918331 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3864478652099590498, guid: c95e92c6cd91c404399379535d2256cf, type: 3}
   m_PrefabInstance: {fileID: 301430688}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2089639589
